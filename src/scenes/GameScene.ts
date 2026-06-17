@@ -2,14 +2,19 @@ import { Scene } from './Scene';
 import type { Game } from '../Game';
 import type { InputState, LevelConfig } from '../types';
 import { Player } from '../entities/Player';
-import { ObstacleManager } from '../entities/ObstacleManager';
+import { EntityManager } from '../entities/EntityManager';
 import { SpriteLoader } from '../systems/SpriteLoader';
 import { LevelManager } from '../systems/LevelManager';
 import { GameEffects } from '../systems/GameEffects';
 import { AudioManager } from '../systems/AudioManager';
-import { aabbOverlap } from '../systems/CollisionSystem';
-import { drawControlHint } from './ui';
-import { GAME_WIDTH, GAME_HEIGHT, CHARACTER_SPRITE_URL } from '../constants';
+import { resolveInteractions } from '../systems/Interactions';
+import { drawControlHint, drawLives } from './ui';
+import {
+  GAME_WIDTH,
+  GAME_HEIGHT,
+  CHARACTER_SPRITE_URL,
+  DASH_SPEED_MULT,
+} from '../constants';
 
 export interface LevelResult {
   config: LevelConfig;
@@ -23,7 +28,7 @@ type ResultCallback = (result: LevelResult) => void;
 export class GameScene extends Scene {
   private sprite: SpriteLoader;
   private player: Player;
-  private obstacles = new ObstacleManager();
+  private entities = new EntityManager();
   private level: LevelManager;
   private config: LevelConfig;
   private effects: GameEffects;
@@ -50,7 +55,7 @@ export class GameScene extends Scene {
 
   enter(): void {
     this.player.reset();
-    this.obstacles.reset();
+    this.entities.reset();
     this.effects.reset();
     this.lives = this.config.lives;
     this.invuln = 0;
@@ -68,7 +73,16 @@ export class GameScene extends Scene {
     if (ev.slid) AudioManager.play('slide');
     if (ev.hit) AudioManager.play('hit');
 
-    const speed = this.startDelay > 0 ? 0 : this.level.currentSpeed;
+    // 救护车致命冲刺结束 => 扣光体力, 本局失败
+    if (this.player.evtFatalDash) {
+      this.player.evtFatalDash = false;
+      this.lives = 0;
+      this.finish(false);
+      return;
+    }
+
+    const baseSpeed = this.startDelay > 0 ? 0 : this.level.currentSpeed;
+    const speed = this.player.isDashing ? baseSpeed * DASH_SPEED_MULT : baseSpeed;
     this.effects.update(dt, speed || this.config.baseSpeed * 0.3);
 
     if (this.startDelay > 0) {
@@ -76,22 +90,20 @@ export class GameScene extends Scene {
       return;
     }
 
-    this.level.advance(dt);
-    this.obstacles.update(dt, speed, this.config.obstaclePool);
+    this.level.advance(this.player.isDashing ? dt * DASH_SPEED_MULT : dt);
+    this.entities.update(dt, speed, this.player.x, this.config.obstaclePool);
 
     if (this.invuln > 0) this.invuln -= dt;
 
-    const pbox = this.player.getHitbox();
-    for (const o of this.obstacles.active) {
-      if (this.invuln <= 0 && aabbOverlap(pbox, o.getHitbox())) {
-        this.lives--;
-        this.invuln = 1.0;
-        this.player.hit();
-        if (this.lives <= 0) {
-          this.finish(false);
-          return;
-        }
-        break;
+    const r = resolveInteractions(this.player, this.entities.active, this.invuln > 0);
+    if (r.healed && this.lives < this.config.lives) this.lives++;
+    if (r.obstacleHit) {
+      this.lives--;
+      this.invuln = 1.0;
+      this.player.hit();
+      if (this.lives <= 0) {
+        this.finish(false);
+        return;
       }
     }
 
@@ -110,7 +122,7 @@ export class GameScene extends Scene {
     ctx.translate(shake.x, shake.y);
 
     this.effects.background.render(ctx);
-    this.obstacles.render(ctx);
+    this.entities.render(ctx);
     this.player.render(ctx);
     this.effects.particles.render(ctx);
 
@@ -128,12 +140,9 @@ export class GameScene extends Scene {
       24,
       42
     );
-    ctx.textAlign = 'right';
-    ctx.fillText(
-      `生命 ${'♥'.repeat(Math.max(0, this.lives))}`,
-      GAME_WIDTH - 24,
-      42
-    );
+
+    // 体力(爱心图标)
+    drawLives(ctx, this.lives, GAME_WIDTH - 24, 26);
 
     // 进度条
     const barW = GAME_WIDTH - 48;

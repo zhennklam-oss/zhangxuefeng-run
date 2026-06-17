@@ -3,8 +3,10 @@ import type { LevelConfig } from '../types';
 // ========================================================================
 // 关卡配置表(数据驱动)
 // ------------------------------------------------------------------------
-// 当前为 6 关占位数据,仅难度曲线(速度/距离/障碍配方)递增。
-// 关卡主题、名称、配色、障碍组合待用户后续确定,改这里即可,无需动逻辑。
+// 6 关难度递增, 并逐步引入新机制:
+// L1 雪糕/滚木(跳) → L2 +雪碧(滑铲) → L3 +坠落纸张/爱心
+// L4 +吉他抬升/考研书冲刺 → L5 +救护车陷阱 → L6 全要素
+// 主题名/配色待定, 改这里即可, 无需动逻辑。
 // ========================================================================
 
 export const LEVELS: LevelConfig[] = [
@@ -20,8 +22,8 @@ export const LEVELS: LevelConfig[] = [
     cloudColor: '#ffffff',
     lives: 3,
     obstaclePool: [
-      { type: 'qiaolezi', weight: 3, minGap: 320 },
-      { type: 'gunmu', weight: 2, minGap: 340 },
+      { type: 'icecream', weight: 3, minGap: 320 },
+      { type: 'log', weight: 2, minGap: 360 },
     ],
   },
   {
@@ -36,9 +38,9 @@ export const LEVELS: LevelConfig[] = [
     cloudColor: '#ffffff',
     lives: 3,
     obstaclePool: [
-      { type: 'qiaolezi', weight: 3, minGap: 300 },
-      { type: 'gunmu', weight: 3, minGap: 320 },
-      { type: 'xuebi', weight: 2, minGap: 340 },
+      { type: 'icecream', weight: 3, minGap: 300 },
+      { type: 'log', weight: 3, minGap: 340 },
+      { type: 'sprite', weight: 2, minGap: 320 },
     ],
   },
   {
@@ -53,9 +55,10 @@ export const LEVELS: LevelConfig[] = [
     cloudColor: '#f4f4f8',
     lives: 3,
     obstaclePool: [
-      { type: 'xuebi', weight: 3, minGap: 300 },
-      { type: 'gunmu', weight: 2, minGap: 320 },
-      { type: 'shijuan', weight: 2, minGap: 300 },
+      { type: 'sprite', weight: 3, minGap: 300 },
+      { type: 'log', weight: 2, minGap: 320 },
+      { type: 'paper', weight: 2, minGap: 320 },
+      { type: 'heart', weight: 1, minGap: 360 },
     ],
   },
   {
@@ -70,9 +73,10 @@ export const LEVELS: LevelConfig[] = [
     cloudColor: '#fff6e0',
     lives: 3,
     obstaclePool: [
-      { type: 'qiaolezi', weight: 3, minGap: 280 },
-      { type: 'shijuan', weight: 2, minGap: 300 },
-      { type: 'maikefeng', weight: 2, minGap: 320 },
+      { type: 'icecream', weight: 3, minGap: 280 },
+      { type: 'paper', weight: 2, minGap: 300 },
+      { type: 'guitar', weight: 2, minGap: 340 },
+      { type: 'book', weight: 1, minGap: 360 },
     ],
   },
   {
@@ -87,10 +91,12 @@ export const LEVELS: LevelConfig[] = [
     cloudColor: '#dfe3f0',
     lives: 3,
     obstaclePool: [
-      { type: 'qiaolezi', weight: 2, minGap: 270 },
-      { type: 'xuebi', weight: 2, minGap: 280 },
-      { type: 'gunmu', weight: 2, minGap: 290 },
-      { type: 'maikefeng', weight: 2, minGap: 300 },
+      { type: 'icecream', weight: 2, minGap: 270 },
+      { type: 'sprite', weight: 2, minGap: 280 },
+      { type: 'log', weight: 2, minGap: 300 },
+      { type: 'guitar', weight: 2, minGap: 320 },
+      { type: 'heart', weight: 1, minGap: 360 },
+      { type: 'ambulance', weight: 1, minGap: 360 },
     ],
   },
   {
@@ -105,11 +111,14 @@ export const LEVELS: LevelConfig[] = [
     cloudColor: '#fff8dc',
     lives: 3,
     obstaclePool: [
-      { type: 'qiaolezi', weight: 2, minGap: 250 },
-      { type: 'xuebi', weight: 2, minGap: 260 },
-      { type: 'gunmu', weight: 2, minGap: 260 },
-      { type: 'shijuan', weight: 2, minGap: 250 },
-      { type: 'maikefeng', weight: 2, minGap: 270 },
+      { type: 'icecream', weight: 2, minGap: 250 },
+      { type: 'sprite', weight: 2, minGap: 260 },
+      { type: 'log', weight: 2, minGap: 280 },
+      { type: 'paper', weight: 2, minGap: 260 },
+      { type: 'guitar', weight: 2, minGap: 300 },
+      { type: 'heart', weight: 1, minGap: 340 },
+      { type: 'book', weight: 1, minGap: 340 },
+      { type: 'ambulance', weight: 1, minGap: 340 },
     ],
   },
 ];

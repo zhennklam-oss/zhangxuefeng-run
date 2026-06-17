@@ -2,44 +2,50 @@ import { Scene } from './Scene';
 import type { Game } from '../Game';
 import type { InputState, ObstaclePoolEntry } from '../types';
 import { Player } from '../entities/Player';
-import { ObstacleManager } from '../entities/ObstacleManager';
+import { EntityManager } from '../entities/EntityManager';
 import { SpriteLoader } from '../systems/SpriteLoader';
 import { ScoreManager } from '../systems/ScoreManager';
 import { GameEffects } from '../systems/GameEffects';
 import { AudioManager } from '../systems/AudioManager';
-import { aabbOverlap } from '../systems/CollisionSystem';
+import { resolveInteractions } from '../systems/Interactions';
 import { setHighScore, getHighScore } from '../systems/Storage';
 import { ResultScene } from './ResultScene';
 import { MenuScene } from './MenuScene';
-import { drawControlHint } from './ui';
+import { drawControlHint, drawLives } from './ui';
 import {
   GAME_WIDTH,
   GAME_HEIGHT,
   CHARACTER_SPRITE_URL,
+  DASH_SPEED_MULT,
   ENDLESS_BASE_SPEED,
   ENDLESS_MAX_SPEED,
   ENDLESS_SPEEDUP_INTERVAL,
   ENDLESS_SPEEDUP_AMOUNT,
 } from '../constants';
 
-// 无尽模式障碍配方(全类型混合)
+const ENDLESS_MAX_LIVES = 3;
+
+// 无尽模式配方: 障碍混合 + 少量道具
 const ENDLESS_POOL: ObstaclePoolEntry[] = [
-  { type: 'qiaolezi', weight: 3, minGap: 240 },
-  { type: 'gunmu', weight: 3, minGap: 250 },
-  { type: 'xuebi', weight: 2, minGap: 260 },
-  { type: 'shijuan', weight: 2, minGap: 240 },
-  { type: 'maikefeng', weight: 2, minGap: 270 },
+  { type: 'icecream', weight: 3, minGap: 240 },
+  { type: 'log', weight: 3, minGap: 280 },
+  { type: 'sprite', weight: 2, minGap: 260 },
+  { type: 'paper', weight: 2, minGap: 250 },
+  { type: 'guitar', weight: 2, minGap: 300 },
+  { type: 'heart', weight: 1, minGap: 320 },
+  { type: 'book', weight: 1, minGap: 340 },
+  { type: 'ambulance', weight: 1, minGap: 340 },
 ];
 
 export class EndlessScene extends Scene {
   private sprite: SpriteLoader;
   private player: Player;
-  private obstacles = new ObstacleManager();
+  private entities = new EntityManager();
   private score = new ScoreManager();
   private speed = ENDLESS_BASE_SPEED;
   private elapsed = 0;
   private speedupTimer = 0;
-  private lives = 3;
+  private lives = ENDLESS_MAX_LIVES;
   private invuln = 0;
   private finished = false;
   private startDelay = 0.6;
@@ -53,13 +59,13 @@ export class EndlessScene extends Scene {
 
   enter(): void {
     this.player.reset();
-    this.obstacles.reset();
+    this.entities.reset();
     this.score.reset();
     this.effects.reset();
     this.speed = ENDLESS_BASE_SPEED;
     this.elapsed = 0;
     this.speedupTimer = 0;
-    this.lives = 3;
+    this.lives = ENDLESS_MAX_LIVES;
     this.invuln = 0;
     this.finished = false;
     this.startDelay = 0.6;
@@ -74,6 +80,14 @@ export class EndlessScene extends Scene {
     if (ev.slid) AudioManager.play('slide');
     if (ev.hit) AudioManager.play('hit');
 
+    // 救护车致命冲刺结束 => 扣光体力, 结束本局
+    if (this.player.evtFatalDash) {
+      this.player.evtFatalDash = false;
+      this.lives = 0;
+      this.finish();
+      return;
+    }
+
     if (this.startDelay > 0) {
       this.effects.update(dt, this.speed * 0.3);
       this.startDelay -= dt;
@@ -87,27 +101,28 @@ export class EndlessScene extends Scene {
       this.speed = Math.min(ENDLESS_MAX_SPEED, this.speed + ENDLESS_SPEEDUP_AMOUNT);
     }
 
-    this.effects.update(dt, this.speed);
-    this.obstacles.update(dt, this.speed, ENDLESS_POOL);
-    this.score.addDistance(this.speed * dt);
+    const moveSpeed = this.player.isDashing ? this.speed * DASH_SPEED_MULT : this.speed;
+    this.effects.update(dt, moveSpeed);
+    this.entities.update(dt, moveSpeed, this.player.x, ENDLESS_POOL);
+    this.score.addDistance(moveSpeed * dt);
     if (this.invuln > 0) this.invuln -= dt;
 
-    const pbox = this.player.getHitbox();
-    for (const o of this.obstacles.active) {
-      // 碰撞
-      if (this.invuln <= 0 && !o.scored && aabbOverlap(pbox, o.getHitbox())) {
-        this.lives--;
-        this.invuln = 1.0;
-        this.player.hit();
-        this.score.onHit();
-        o.scored = true; // 标记已结算,避免重复
-        if (this.lives <= 0) {
-          this.finish();
-          return;
-        }
-        continue;
+    const r = resolveInteractions(this.player, this.entities.active, this.invuln > 0);
+    if (r.healed && this.lives < ENDLESS_MAX_LIVES) this.lives++;
+    if (r.obstacleHit) {
+      this.lives--;
+      this.invuln = 1.0;
+      this.player.hit();
+      this.score.onHit();
+      if (this.lives <= 0) {
+        this.finish();
+        return;
       }
-      // 成功躲避: 障碍越过玩家且未被判定撞击
+    }
+
+    // 连击计分: 障碍越过玩家且未撞击
+    for (const o of this.entities.active) {
+      if (o.spec.category !== 'obstacle') continue;
       if (!o.scored && o.x + o.w < this.player.x) {
         this.score.onAvoid();
         o.scored = true;
@@ -145,7 +160,7 @@ export class EndlessScene extends Scene {
     ctx.translate(shake.x, shake.y);
 
     this.effects.background.render(ctx);
-    this.obstacles.render(ctx);
+    this.entities.render(ctx);
     this.player.render(ctx);
     this.effects.particles.render(ctx);
 
@@ -171,11 +186,7 @@ export class EndlessScene extends Scene {
       );
     }
 
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#08060d';
-    ctx.font = 'bold 26px system-ui, sans-serif';
-    ctx.fillText(`生命 ${'♥'.repeat(Math.max(0, this.lives))}`, GAME_WIDTH - 24, 46);
-    ctx.textAlign = 'left';
+    drawLives(ctx, this.lives, GAME_WIDTH - 24, 26);
 
     if (this.startDelay > 0) drawControlHint(ctx, GAME_WIDTH, GAME_HEIGHT);
   }

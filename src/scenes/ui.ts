@@ -1,4 +1,5 @@
 import type { Rect } from '../types';
+import { ItemSprites } from '../systems/ItemSprites';
 
 // Canvas 按钮的轻量描述与绘制/命中工具。
 export interface Button {
@@ -82,6 +83,29 @@ export function drawControlHint(
   ctx.fillText('下半屏 / S·↓ 滑铲', width / 2, height / 2 + 30);
   ctx.restore();
   ctx.textAlign = 'left';
+}
+
+// 体力条: 用爱心贴图绘制 n 颗(右对齐, rightX 为最右边缘)
+export function drawLives(
+  ctx: CanvasRenderingContext2D,
+  lives: number,
+  rightX: number,
+  topY: number
+): void {
+  const size = 30;
+  const gap = 6;
+  const img = ItemSprites.getImage('heart');
+  for (let i = 0; i < lives; i++) {
+    const x = rightX - (i + 1) * size - i * gap;
+    if (img && img.complete && img.naturalWidth > 0) {
+      ctx.drawImage(img, x, topY, size, size);
+    } else {
+      ctx.fillStyle = '#e74c3c';
+      ctx.font = `${size}px system-ui`;
+      ctx.textAlign = 'left';
+      ctx.fillText('♥', x, topY + size);
+    }
+  }
 }
 
 export function drawClouds(

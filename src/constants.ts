@@ -17,6 +17,10 @@ export const SLIDE_DURATION = 0.6;
 // 最大跳跃次数(2 = 支持二段跳)
 export const MAX_JUMPS = 2;
 
+// 冲刺(书/救护车道具): 持续时间与速度倍率
+export const DASH_DURATION = 2.2; // 秒
+export const DASH_SPEED_MULT = 1.8; // 冲刺时场景速度倍率
+
 // 角色在屏幕中的固定横向位置(自动奔跑,世界向左滚)
 export const PLAYER_X = 240;
 

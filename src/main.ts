@@ -2,6 +2,9 @@ import './style.css';
 import { Game } from './Game';
 import { MenuScene } from './scenes/MenuScene';
 import { AudioManager } from './systems/AudioManager';
+import { ItemSprites } from './systems/ItemSprites';
+
+ItemSprites.load();
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const game = new Game(canvas);

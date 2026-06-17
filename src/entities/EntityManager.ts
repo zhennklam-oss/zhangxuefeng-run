@@ -1,11 +1,10 @@
-import { Obstacle } from './Obstacle';
-import { OBSTACLE_SPECS } from './Obstacle';
+import { Entity } from './Entity';
 import type { ObstaclePoolEntry } from '../types';
 import { GAME_WIDTH } from '../constants';
 
-// 管理障碍物的对象池、加权生成与回收。
-export class ObstacleManager {
-  private pool: Obstacle[] = [];
+// 管理实体的对象池、加权生成与回收。
+export class EntityManager {
+  private pool: Entity[] = [];
   private distanceSinceSpawn = 0;
   private nextGap = 0;
 
@@ -15,20 +14,19 @@ export class ObstacleManager {
     this.nextGap = 500;
   }
 
-  get active(): Obstacle[] {
+  get active(): Entity[] {
     return this.pool.filter((o) => o.active);
   }
 
-  private obtain(): Obstacle {
+  private obtain(): Entity {
     let o = this.pool.find((x) => !x.active);
     if (!o) {
-      o = new Obstacle();
+      o = new Entity();
       this.pool.push(o);
     }
     return o;
   }
 
-  // 按权重随机挑选一个障碍类型
   private pickType(entries: ObstaclePoolEntry[]): ObstaclePoolEntry {
     const total = entries.reduce((s, e) => s + e.weight, 0);
     let r = Math.random() * total;
@@ -39,25 +37,25 @@ export class ObstacleManager {
     return entries[entries.length - 1];
   }
 
-  // dx: 本帧世界滚动的像素距离; entries: 当前可用障碍配方
-  update(dt: number, speed: number, entries: ObstaclePoolEntry[]): void {
-    const dx = speed * dt;
-    this.distanceSinceSpawn += dx;
+  update(
+    dt: number,
+    speed: number,
+    playerX: number,
+    entries: ObstaclePoolEntry[]
+  ): void {
+    this.distanceSinceSpawn += speed * dt;
 
     if (this.distanceSinceSpawn >= this.nextGap && entries.length > 0) {
       const entry = this.pickType(entries);
       const o = this.obtain();
       o.spawn(entry.type, GAME_WIDTH + 40);
       this.distanceSinceSpawn = 0;
-      // 下一个间距 = 该障碍 minGap + 随机量,随速度略放大保证可反应
-      const spec = OBSTACLE_SPECS[entry.type];
       const speedFactor = Math.max(1, speed / 360);
-      this.nextGap =
-        (entry.minGap + spec.w + Math.random() * 220) * speedFactor;
+      this.nextGap = (entry.minGap + o.w + Math.random() * 220) * speedFactor;
     }
 
     for (const o of this.pool) {
-      if (o.active) o.update(dt, speed);
+      if (o.active) o.update(dt, speed, playerX);
     }
   }
 
