@@ -24,6 +24,13 @@ export const LOG_SPEED_FACTOR = 1.5;
 // 吉他触发抬升的水平距离(px)
 export const GUITAR_RISE_TRIGGER = 380;
 
+// 稀有道具的最小复现距离(px): 距上次该类型出现不足此值则改生成别的, 避免扎堆
+export const MIN_REAPPEAR_DISTANCE: Partial<Record<EntityKind, number>> = {
+  heart: 2500,
+  book: 3000,
+  ambulance: 2800,
+};
+
 export const ENTITY_SPECS: Record<EntityKind, EntitySpec> = {
   icecream: { category: 'obstacle', behavior: 'static', drawH: 110, floating: false, hitPad: 0.18 },
   sprite: { category: 'obstacle', behavior: 'static', drawH: 100, floating: true, hitPad: 0.16 },

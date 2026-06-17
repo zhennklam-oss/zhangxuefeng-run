@@ -30,6 +30,7 @@ export class Entity {
   private swayPhase = 0;
   private swaySpeed = 0;
   private rising = false; // guitar 抬升中/已抬升
+  private willRise = false; // guitar 本次是否会抬升(50% 概率)
   private targetY = 0; // guitar 抬升目标顶边
   private glowPhase = 0; // 救护车发光相位
 
@@ -46,6 +47,7 @@ export class Entity {
     this.rotation = 0;
     this.vy = 0;
     this.rising = false;
+    this.willRise = Math.random() < 0.5; // 吉他: 一半概率抬升, 一半保持地面
     this.glowPhase = 0;
 
     if (spec.behavior === 'falling') {
@@ -79,7 +81,9 @@ export class Entity {
       case 'falling':
         this.x -= speed * dt;
         if (this.y < this.restY) {
-          this.vy += this.fallGravity * dt;
+          // 下落速度随场景速度同步加快(人物越快, 纸条砸得越快)
+          const fallFactor = Math.max(1, speed / 360);
+          this.vy += this.fallGravity * fallFactor * dt;
           this.y += this.vy * dt;
           // 飘摆 + 缓慢翻转, 像纸片飘落
           this.swayPhase += this.swaySpeed * dt;
@@ -93,8 +97,8 @@ export class Entity {
         break;
       case 'rising':
         this.x -= speed * dt;
-        // 人物靠近且尚未抬升 => 触发上升
-        if (!this.rising && this.x - playerX < GUITAR_RISE_TRIGGER) {
+        // 人物靠近且本次会抬升 => 触发上升(否则保持地面障碍)
+        if (this.willRise && !this.rising && this.x - playerX < GUITAR_RISE_TRIGGER) {
           this.rising = true;
         }
         if (this.rising && this.y > this.targetY) {

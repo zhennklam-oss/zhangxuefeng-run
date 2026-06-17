@@ -13,8 +13,8 @@ const SFX_FILES: Record<SfxName, string> = {
 };
 
 const BGM_FILES: Record<BgmName, string> = {
-  menu: assetUrl('assets/audio/bgm-menu.mp3'),
-  level: assetUrl('assets/audio/bgm-level.mp3'),
+  menu: assetUrl('assets/audio/bgm.mp3'),
+  level: assetUrl('assets/audio/bgm.mp3'),
 };
 
 // 封装 Howler。音频文件缺失时静默降级,不影响游戏运行。

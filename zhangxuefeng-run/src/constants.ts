@@ -50,7 +50,7 @@ export const CHARACTER_SPRITE_URL = assetUrl('assets/sprites/character.png');
 export const ENDLESS_SPEEDUP_SCORE = 1000;
 // 每档速度倍率增量(1000分=1.2x, 2000分=1.4x, 3000分=1.6x ...)
 export const ENDLESS_SPEEDUP_STEP = 0.2;
-export const ENDLESS_BASE_SPEED = 360;
+export const ENDLESS_BASE_SPEED = 540;
 export const ENDLESS_MAX_SPEED = 1100;
 
 // 计分

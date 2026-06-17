@@ -95,10 +95,12 @@ export class EndlessScene extends Scene {
     const tier = Math.floor(this.score.total / ENDLESS_SPEEDUP_SCORE);
     const mult = 1 + tier * ENDLESS_SPEEDUP_STEP;
     this.speed = Math.min(ENDLESS_MAX_SPEED, ENDLESS_BASE_SPEED * mult);
+    // 障碍密度随档位提升: 每档收紧 8% 间距, 最密到 0.5(后期越来越密集)
+    const gapScale = Math.max(0.5, 1 - tier * 0.08);
 
     const moveSpeed = this.player.isDashing ? this.speed * DASH_SPEED_MULT : this.speed;
     this.effects.update(dt, moveSpeed);
-    this.entities.update(dt, moveSpeed, this.player.x, ENDLESS_POOL);
+    this.entities.update(dt, moveSpeed, this.player.x, ENDLESS_POOL, gapScale);
     this.score.addDistance(moveSpeed * dt);
     if (this.invuln > 0) this.invuln -= dt;
 
