@@ -1,0 +1,34 @@
+/* Zpix 像素字体通过 JS(FontFace API)按 BASE_URL 加载, 见 main.ts */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #cfe8f5;
+  font-family: 'Zpix', system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: none;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game {
+  display: block;
+  background: #fff;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+  image-rendering: pixelated;
+}
