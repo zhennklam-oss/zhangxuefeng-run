@@ -19,8 +19,8 @@ import {
   DASH_SPEED_MULT,
   ENDLESS_BASE_SPEED,
   ENDLESS_MAX_SPEED,
-  ENDLESS_SPEEDUP_INTERVAL,
-  ENDLESS_SPEEDUP_AMOUNT,
+  ENDLESS_SPEEDUP_SCORE,
+  ENDLESS_SPEEDUP_STEP,
 } from '../constants';
 
 const ENDLESS_MAX_LIVES = 3;
@@ -43,8 +43,6 @@ export class EndlessScene extends Scene {
   private entities = new EntityManager();
   private score = new ScoreManager();
   private speed = ENDLESS_BASE_SPEED;
-  private elapsed = 0;
-  private speedupTimer = 0;
   private lives = ENDLESS_MAX_LIVES;
   private invuln = 0;
   private finished = false;
@@ -63,8 +61,6 @@ export class EndlessScene extends Scene {
     this.score.reset();
     this.effects.reset();
     this.speed = ENDLESS_BASE_SPEED;
-    this.elapsed = 0;
-    this.speedupTimer = 0;
     this.lives = ENDLESS_MAX_LIVES;
     this.invuln = 0;
     this.finished = false;
@@ -94,12 +90,10 @@ export class EndlessScene extends Scene {
       return;
     }
 
-    this.elapsed += dt;
-    this.speedupTimer += dt;
-    if (this.speedupTimer >= ENDLESS_SPEEDUP_INTERVAL) {
-      this.speedupTimer -= ENDLESS_SPEEDUP_INTERVAL;
-      this.speed = Math.min(ENDLESS_MAX_SPEED, this.speed + ENDLESS_SPEEDUP_AMOUNT);
-    }
+    // 按得分档位提速: 每 1000 分 +0.2 倍率(1.2x, 1.4x, 1.6x ...)
+    const tier = Math.floor(this.score.total / ENDLESS_SPEEDUP_SCORE);
+    const mult = 1 + tier * ENDLESS_SPEEDUP_STEP;
+    this.speed = Math.min(ENDLESS_MAX_SPEED, ENDLESS_BASE_SPEED * mult);
 
     const moveSpeed = this.player.isDashing ? this.speed * DASH_SPEED_MULT : this.speed;
     this.effects.update(dt, moveSpeed);

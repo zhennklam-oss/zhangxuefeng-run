@@ -24,6 +24,11 @@ export class Entity {
 
   private rotation = 0;
   private vy = 0; // falling 用
+  private fallGravity = 600; // falling 重力(每个纸条随机)
+  private restY = 0; // falling 落定的顶边 y(可停在半空)
+  private swayAmp = 0; // falling 横向飘摆幅度
+  private swayPhase = 0;
+  private swaySpeed = 0;
   private rising = false; // guitar 抬升中/已抬升
   private targetY = 0; // guitar 抬升目标顶边
 
@@ -42,8 +47,17 @@ export class Entity {
     this.rising = false;
 
     if (spec.behavior === 'falling') {
-      this.y = -this.h - Math.random() * 160; // 从屏幕上方坠落
-      this.vy = 80;
+      // 纸条随机化: 起始高度/初速/重力/横向飘摆/落定高度都不同
+      this.y = -this.h - Math.random() * 520;
+      this.vy = 20 + Math.random() * 140;
+      this.fallGravity = 260 + Math.random() * 520;
+      this.swayAmp = 18 + Math.random() * 46;
+      this.swaySpeed = 1.5 + Math.random() * 2.5;
+      this.swayPhase = Math.random() * Math.PI * 2;
+      // 多数落地, 少数停在半空成为高低不一的空中障碍
+      const airborne = Math.random() < 0.4;
+      const gap = airborne ? FLOATING_GAP + Math.random() * 90 : 0;
+      this.restY = GROUND_Y - gap - this.h;
     } else if (spec.floating) {
       // 道具用 PICKUP_GAP(跳跃可及), 高位障碍用 FLOATING_GAP(滑铲通过)
       const gap = spec.category === 'pickup' ? PICKUP_GAP : FLOATING_GAP;
@@ -62,9 +76,18 @@ export class Entity {
         break;
       case 'falling':
         this.x -= speed * dt;
-        this.vy += 600 * dt;
-        this.y += this.vy * dt;
-        if (this.y > GROUND_Y - this.h) this.y = GROUND_Y - this.h;
+        if (this.y < this.restY) {
+          this.vy += this.fallGravity * dt;
+          this.y += this.vy * dt;
+          // 飘摆 + 缓慢翻转, 像纸片飘落
+          this.swayPhase += this.swaySpeed * dt;
+          this.x += Math.sin(this.swayPhase) * this.swayAmp * dt;
+          this.rotation = Math.sin(this.swayPhase) * 0.25;
+          if (this.y >= this.restY) {
+            this.y = this.restY;
+            this.rotation = 0;
+          }
+        }
         break;
       case 'rising':
         this.x -= speed * dt;

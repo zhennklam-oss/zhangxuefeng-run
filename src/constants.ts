@@ -9,7 +9,7 @@ export const GROUND_Y = 600;
 
 // 重力与跳跃(px/s^2, px/s)
 export const GRAVITY = 2600;
-export const JUMP_VELOCITY = -1050;
+export const JUMP_VELOCITY = -900;
 
 // 滑铲持续时间(秒)
 export const SLIDE_DURATION = 0.6;
@@ -44,9 +44,10 @@ export function assetUrl(path: string): string {
 
 export const CHARACTER_SPRITE_URL = assetUrl('assets/sprites/character.png');
 
-// 无尽模式: 每隔多少秒提速
-export const ENDLESS_SPEEDUP_INTERVAL = 30;
-export const ENDLESS_SPEEDUP_AMOUNT = 25; // 每次提速增量(px/s)
+// 无尽模式: 每累计多少分提速一档
+export const ENDLESS_SPEEDUP_SCORE = 1000;
+// 每档速度倍率增量(1000分=1.2x, 2000分=1.4x, 3000分=1.6x ...)
+export const ENDLESS_SPEEDUP_STEP = 0.2;
 export const ENDLESS_BASE_SPEED = 360;
 export const ENDLESS_MAX_SPEED = 1100;
 
