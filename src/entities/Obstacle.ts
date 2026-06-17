@@ -108,10 +108,5 @@ export class Obstacle {
     ctx.fillRect(this.x, this.y, this.w, this.h);
     ctx.fillStyle = s.accent;
     ctx.fillRect(this.x, this.y, this.w, this.h * 0.3);
-    // 占位文字标签
-    ctx.fillStyle = '#000';
-    ctx.font = '14px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(s.label, this.x + this.w / 2, this.y - 6);
   }
 }
