@@ -1,10 +1,12 @@
 import type { Player } from '../entities/Player';
 import type { Entity } from '../entities/Entity';
+import type { EntityKind } from '../types';
 import { aabbOverlap } from './CollisionSystem';
 import { AudioManager } from './AudioManager';
 
 export interface InteractionResult {
   obstacleHit: boolean; // 本帧撞到障碍(应扣血)
+  hitKind: EntityKind | null; // 撞到的障碍类型(用于死因文字)
   healed: boolean; // 吃到爱心(+1 体力)
   dashStarted: boolean; // 吃到书/救护车, 已触发冲刺
 }
@@ -19,6 +21,7 @@ export function resolveInteractions(
 ): InteractionResult {
   const res: InteractionResult = {
     obstacleHit: false,
+    hitKind: null,
     healed: false,
     dashStarted: false,
   };
@@ -62,6 +65,7 @@ export function resolveInteractions(
     if (!invulnActive && !e.scored) {
       e.scored = true;
       res.obstacleHit = true;
+      res.hitKind = e.kind;
     }
   }
   return res;

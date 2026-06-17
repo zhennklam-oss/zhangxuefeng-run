@@ -10,6 +10,7 @@ import {
   PLAYER_X,
   PLAYER_DRAW_W,
   PLAYER_DRAW_H,
+  PLAYER_FOOT_OFFSET,
 } from '../constants';
 
 export type PlayerState = 'start' | 'run' | 'jump' | 'slide' | 'hit' | 'dash';
@@ -214,7 +215,9 @@ export class Player {
   render(ctx: CanvasRenderingContext2D): void {
     const dw = PLAYER_DRAW_W;
     const dh = PLAYER_DRAW_H;
-    const dy = this.y - dh + (this.state === 'slide' ? dh * 0.1 : 0);
+    // 下移补偿精灵底部留白, 让脚部贴地; 滑铲时再略压低
+    const dy =
+      this.y - dh + PLAYER_FOOT_OFFSET + (this.state === 'slide' ? dh * 0.1 : 0);
 
     // 冲刺光晕
     if (this.state === 'dash') {

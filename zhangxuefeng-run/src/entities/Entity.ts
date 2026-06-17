@@ -31,6 +31,7 @@ export class Entity {
   private swaySpeed = 0;
   private rising = false; // guitar 抬升中/已抬升
   private targetY = 0; // guitar 抬升目标顶边
+  private glowPhase = 0; // 救护车发光相位
 
   spawn(kind: EntityKind, x: number): void {
     const spec = ENTITY_SPECS[kind];
@@ -45,6 +46,7 @@ export class Entity {
     this.rotation = 0;
     this.vy = 0;
     this.rising = false;
+    this.glowPhase = 0;
 
     if (spec.behavior === 'falling') {
       // 纸条随机化: 起始高度/初速/重力/横向飘摆/落定高度都不同
@@ -102,6 +104,7 @@ export class Entity {
       default:
         this.x -= speed * dt;
     }
+    if (this.kind === 'ambulance') this.glowPhase += dt;
     if (this.x + this.w < -40) this.active = false;
   }
 
@@ -116,6 +119,26 @@ export class Entity {
   }
 
   render(ctx: CanvasRenderingContext2D): void {
+    // 救护车: 脚下发光, 暗示可拾取(陷阱)
+    if (this.kind === 'ambulance') this.renderGlow(ctx);
     ItemSprites.draw(ctx, this.kind, this.x, this.y, this.w, this.h, this.rotation);
+  }
+
+  private renderGlow(ctx: CanvasRenderingContext2D): void {
+    const cx = this.x + this.w / 2;
+    const cy = this.y + this.h * 0.62;
+    const pulse = 0.7 + 0.3 * Math.sin(this.glowPhase * 5);
+    const radius = this.w * 0.75 * pulse;
+    const g = ctx.createRadialGradient(cx, cy, radius * 0.15, cx, cy, radius);
+    g.addColorStop(0, 'rgba(255,250,180,0.9)');
+    g.addColorStop(0.5, 'rgba(255,225,90,0.45)');
+    g.addColorStop(1, 'rgba(255,210,60,0)');
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 }

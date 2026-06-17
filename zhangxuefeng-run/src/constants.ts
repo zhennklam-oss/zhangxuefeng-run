@@ -35,6 +35,8 @@ export const SPRITE_CELL = 418;
 // 角色在画面中的绘制尺寸
 export const PLAYER_DRAW_W = 130;
 export const PLAYER_DRAW_H = 130;
+// 角色精灵下边留白补偿: 绘制时整体下移, 让脚部贴合地面
+export const PLAYER_FOOT_OFFSET = 14;
 
 // 解析运行时资源路径,适配 GitHub Pages 子路径部署(base)。
 export function assetUrl(path: string): string {

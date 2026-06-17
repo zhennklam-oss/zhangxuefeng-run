@@ -1,6 +1,6 @@
 import { Scene } from './Scene';
 import type { Game } from '../Game';
-import type { InputState, ObstaclePoolEntry } from '../types';
+import type { InputState, ObstaclePoolEntry, EntityKind } from '../types';
 import { Player } from '../entities/Player';
 import { EntityManager } from '../entities/EntityManager';
 import { SpriteLoader } from '../systems/SpriteLoader';
@@ -11,6 +11,7 @@ import { resolveInteractions } from '../systems/Interactions';
 import { setHighScore, getHighScore } from '../systems/Storage';
 import { ResultScene } from './ResultScene';
 import { MenuScene } from './MenuScene';
+import { deathMessage } from '../config/messages';
 import { drawControlHint, drawLives } from './ui';
 import {
   GAME_WIDTH,
@@ -80,7 +81,7 @@ export class EndlessScene extends Scene {
     if (this.player.evtFatalDash) {
       this.player.evtFatalDash = false;
       this.lives = 0;
-      this.finish();
+      this.finish('ambulance');
       return;
     }
 
@@ -109,7 +110,7 @@ export class EndlessScene extends Scene {
       this.player.hit();
       this.score.onHit();
       if (this.lives <= 0) {
-        this.finish();
+        this.finish(r.hitKind);
         return;
       }
     }
@@ -125,21 +126,22 @@ export class EndlessScene extends Scene {
     }
   }
 
-  private finish(): void {
+  private finish(deathKind: EntityKind | null = null): void {
     this.finished = true;
     const finalScore = this.score.total;
     const prevHigh = getHighScore();
     setHighScore(finalScore);
     const isNewRecord = finalScore > prevHigh;
+    const record = isNewRecord
+      ? '🎉 新纪录!'
+      : `最高分 ${Math.max(prevHigh, finalScore)}`;
     this.game.setScene(
       new ResultScene(this.game, {
-        title: '游戏结束',
+        title: deathMessage(deathKind),
         subtitle: `得分 ${finalScore}`,
         won: isNewRecord,
         primaryLabel: '再来一局',
-        extraLine: isNewRecord
-          ? '🎉 新纪录!'
-          : `最高分 ${Math.max(prevHigh, finalScore)}`,
+        extraLine: record,
         onPrimary: () => this.game.setScene(new EndlessScene(this.game)),
         onBack: () => {
           this.game.setScene(new MenuScene(this.game));

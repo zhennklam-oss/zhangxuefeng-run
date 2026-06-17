@@ -8,6 +8,7 @@ import { getProgress, setProgress } from '../systems/Storage';
 import { GameScene } from './GameScene';
 import { ResultScene } from './ResultScene';
 import { MenuScene } from './MenuScene';
+import { deathMessage, LEVEL_CLEAR_MESSAGE } from '../config/messages';
 
 export class LevelSelectScene extends Scene {
   private levelButtons: { btn: Button; id: number }[] = [];
@@ -66,9 +67,12 @@ export class LevelSelectScene extends Scene {
         this.game.setScene(
           new ResultScene(this.game, {
             title: result.won ? '通关！' : '失败',
-            subtitle: `${result.config.name}　${result.meters}m`,
+            subtitle: result.won
+              ? LEVEL_CLEAR_MESSAGE
+              : deathMessage(result.deathKind),
             won: result.won,
             primaryLabel: result.won ? '下一关' : '重试',
+            extraLine: `${result.config.name}　${result.meters}m`,
             onPrimary: () => {
               const nextId = result.won ? id + 1 : id;
               const next = LEVELS.find((l) => l.id === nextId);

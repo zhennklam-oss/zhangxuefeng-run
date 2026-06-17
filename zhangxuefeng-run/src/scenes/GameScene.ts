@@ -1,6 +1,6 @@
 import { Scene } from './Scene';
 import type { Game } from '../Game';
-import type { InputState, LevelConfig } from '../types';
+import type { InputState, LevelConfig, EntityKind } from '../types';
 import { Player } from '../entities/Player';
 import { EntityManager } from '../entities/EntityManager';
 import { SpriteLoader } from '../systems/SpriteLoader';
@@ -20,6 +20,7 @@ export interface LevelResult {
   config: LevelConfig;
   won: boolean;
   meters: number;
+  deathKind: EntityKind | null; // 失败时的死因(通关为 null)
 }
 
 type ResultCallback = (result: LevelResult) => void;
@@ -77,7 +78,7 @@ export class GameScene extends Scene {
     if (this.player.evtFatalDash) {
       this.player.evtFatalDash = false;
       this.lives = 0;
-      this.finish(false);
+      this.finish(false, 'ambulance');
       return;
     }
 
@@ -102,7 +103,7 @@ export class GameScene extends Scene {
       this.invuln = 1.0;
       this.player.hit();
       if (this.lives <= 0) {
-        this.finish(false);
+        this.finish(false, r.hitKind);
         return;
       }
     }
@@ -110,10 +111,15 @@ export class GameScene extends Scene {
     if (this.level.isComplete) this.finish(true);
   }
 
-  private finish(won: boolean): void {
+  private finish(won: boolean, deathKind: EntityKind | null = null): void {
     this.finished = true;
     if (won) AudioManager.play('pass');
-    this.onResult({ config: this.config, won, meters: this.level.meters });
+    this.onResult({
+      config: this.config,
+      won,
+      meters: this.level.meters,
+      deathKind,
+    });
   }
 
   render(ctx: CanvasRenderingContext2D): void {

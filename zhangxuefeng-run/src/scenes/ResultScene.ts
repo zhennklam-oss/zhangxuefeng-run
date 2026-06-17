@@ -41,7 +41,9 @@ export class ResultScene extends Scene {
 
     ctx.textAlign = 'center';
     ctx.fillStyle = this.opts.won ? '#1e8449' : '#c0392b';
-    ctx.font = 'bold 80px Zpix, system-ui, sans-serif';
+    // 标题字号按长度自适应, 避免长死因文字溢出
+    const titleSize = this.opts.title.length > 6 ? 60 : 80;
+    ctx.font = `bold ${titleSize}px Zpix, system-ui, sans-serif`;
     ctx.fillText(this.opts.title, GAME_WIDTH / 2, 230);
 
     ctx.fillStyle = '#08060d';

@@ -31,6 +31,6 @@ export const ENTITY_SPECS: Record<EntityKind, EntitySpec> = {
   paper: { category: 'obstacle', behavior: 'falling', drawH: 92, floating: false, hitPad: 0.18 },
   guitar: { category: 'obstacle', behavior: 'rising', drawH: 120, floating: false, hitPad: 0.16 },
   heart: { category: 'pickup', behavior: 'static', drawH: 78, floating: true, hitPad: 0.1, effect: 'heal' },
-  ambulance: { category: 'pickup', behavior: 'static', drawH: 96, floating: true, hitPad: 0.1, effect: 'ambulance' },
+  ambulance: { category: 'pickup', behavior: 'static', drawH: 96, floating: false, hitPad: 0.1, effect: 'ambulance' },
   book: { category: 'pickup', behavior: 'static', drawH: 84, floating: true, hitPad: 0.1, effect: 'dash' },
 };
