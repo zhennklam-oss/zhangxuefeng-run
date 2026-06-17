@@ -58,10 +58,27 @@ class AudioManagerImpl {
 
   playBgm(name: BgmName): void {
     const next = this.bgm.get(name);
-    if (this.currentBgm === next) return;
+    if (!next) return;
+    if (this.currentBgm === next) {
+      // 已是当前曲目: 若没在响(被自动播放策略拦截过), 补播一次
+      this.tryPlay(next);
+      return;
+    }
     if (this.currentBgm) this.currentBgm.stop();
-    this.currentBgm = next ?? null;
-    if (!this.muted && next && next.state() === 'loaded') next.play();
+    this.currentBgm = next;
+    this.tryPlay(next);
+  }
+
+  // 立即播放; 若文件尚未加载完成, 等加载完成后再播(仍是当前曲目且未静音时)。
+  private tryPlay(h: Howl): void {
+    if (this.muted) return;
+    if (h.state() === 'loaded') {
+      if (!h.playing()) h.play();
+    } else {
+      h.once('load', () => {
+        if (!this.muted && this.currentBgm === h && !h.playing()) h.play();
+      });
+    }
   }
 
   stopBgm(): void {
