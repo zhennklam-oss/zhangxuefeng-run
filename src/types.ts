@@ -43,7 +43,7 @@ export type GameMode = 'level' | 'endless';
 
 // 输入意图(由 InputManager 归一化键盘/触屏后产出)
 export interface InputState {
-  jump: boolean; // 本帧是否触发跳跃
-  slide: boolean; // 本帧是否按住滑铲
+  jump: boolean; // 本帧是否触发跳跃(边沿)
+  slide: boolean; // 本帧是否触发滑铲(边沿)
   confirm: boolean; // 确认/开始(菜单用)
 }

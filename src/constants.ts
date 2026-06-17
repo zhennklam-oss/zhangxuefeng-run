@@ -14,6 +14,9 @@ export const JUMP_VELOCITY = -1050;
 // 滑铲持续时间(秒)
 export const SLIDE_DURATION = 0.6;
 
+// 最大跳跃次数(2 = 支持二段跳)
+export const MAX_JUMPS = 2;
+
 // 角色在屏幕中的固定横向位置(自动奔跑,世界向左滚)
 export const PLAYER_X = 240;
 

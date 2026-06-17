@@ -77,8 +77,8 @@ export function drawControlHint(
   roundRect(ctx, (width - bw) / 2, height / 2 - bh / 2, bw, bh, 16);
   ctx.fill();
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 30px system-ui, sans-serif';
-  ctx.fillText('上半屏 / W·↑ 跳跃', width / 2, height / 2 - 8);
+  ctx.font = 'bold 28px system-ui, sans-serif';
+  ctx.fillText('上半屏 / W·↑ 跳跃(可二段跳)', width / 2, height / 2 - 8);
   ctx.fillText('下半屏 / S·↓ 滑铲', width / 2, height / 2 + 30);
   ctx.restore();
   ctx.textAlign = 'left';

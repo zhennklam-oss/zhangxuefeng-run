@@ -2,11 +2,11 @@ import type { InputState } from '../types';
 import { GAME_HEIGHT, GAME_WIDTH } from '../constants';
 
 // 统一键盘 + 触屏输入，归一化为 InputState。
-// jump/confirm 为"边沿触发"(本帧刚按下)，slide 为"按住"状态。
+// jump/slide/confirm 均为"边沿触发"(本帧刚按下,消费后清零)。
 export class InputManager {
   private jumpQueued = false;
   private confirmQueued = false;
-  private slideHeld = false;
+  private slideQueued = false;
 
   // 触屏: 记录每个触点落在上半区还是下半区
   private touchTopActive = false;
@@ -59,7 +59,7 @@ export class InputManager {
         break;
       case 'KeyS':
       case 'ArrowDown':
-        this.slideHeld = true;
+        this.slideQueued = true;
         break;
       case 'Enter':
         this.confirmQueued = true;
@@ -67,10 +67,8 @@ export class InputManager {
     }
   };
 
-  private onKeyUp = (e: KeyboardEvent) => {
-    if (e.code === 'KeyS' || e.code === 'ArrowDown') {
-      this.slideHeld = false;
-    }
+  private onKeyUp = (_e: KeyboardEvent) => {
+    // slide 改为边沿触发,无需处理松开
   };
 
   // 触点 y 落在上 60% => 跳跃, 下 40% => 滑铲
@@ -89,30 +87,34 @@ export class InputManager {
 
   private onTouchStart = (e: TouchEvent) => {
     e.preventDefault();
-    const before = this.touchTopActive;
+    const topBefore = this.touchTopActive;
+    const bottomBefore = this.touchBottomActive;
     this.classifyTouches(e.touches);
-    if (this.touchTopActive && !before) {
+    // 上半区新触点 => 跳跃; 下半区新触点 => 滑铲(均边沿触发)
+    if (this.touchTopActive && !topBefore) {
       this.jumpQueued = true;
       this.confirmQueued = true;
     }
-    this.slideHeld = this.touchBottomActive;
+    if (this.touchBottomActive && !bottomBefore) {
+      this.slideQueued = true;
+    }
   };
 
   private onTouchEnd = (e: TouchEvent) => {
     e.preventDefault();
     this.classifyTouches(e.touches);
-    this.slideHeld = this.touchBottomActive;
   };
 
   // 每帧读取并清空边沿触发标志
   poll(): InputState {
     const state: InputState = {
       jump: this.jumpQueued,
-      slide: this.slideHeld,
+      slide: this.slideQueued,
       confirm: this.confirmQueued,
     };
     this.jumpQueued = false;
     this.confirmQueued = false;
+    this.slideQueued = false;
     return state;
   }
 }

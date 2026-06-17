@@ -5,6 +5,7 @@ import {
   GRAVITY,
   JUMP_VELOCITY,
   SLIDE_DURATION,
+  MAX_JUMPS,
   PLAYER_X,
   PLAYER_DRAW_W,
   PLAYER_DRAW_H,
@@ -21,6 +22,7 @@ export class Player {
   private hitTimer = 0;
   private runAnimTime = 0;
   private startTimer = 0;
+  private jumpsLeft = MAX_JUMPS; // 剩余可用跳跃次数(支持二段跳)
   private sprite: SpriteLoader;
 
   // 一次性事件标志(由场景每帧消费,用于触发粒子/音效)
@@ -40,6 +42,7 @@ export class Player {
     this.slideTimer = 0;
     this.hitTimer = 0;
     this.startTimer = 0.5; // 起跑姿势短暂停留
+    this.jumpsLeft = MAX_JUMPS;
     this.evtJumped = this.evtSlid = this.evtLanded = this.evtHit = false;
   }
 
@@ -49,18 +52,19 @@ export class Player {
 
   jump(): void {
     if (this.state === 'hit') return;
-    // 仅在贴地(跑/铲)时可起跳
-    if (!this.isAirborne) {
+    // 还有跳跃次数即可起跳(地面起跳 + 空中二段跳)
+    if (this.jumpsLeft > 0) {
       this.vy = JUMP_VELOCITY;
       this.state = 'jump';
       this.slideTimer = 0;
+      this.jumpsLeft--;
       this.evtJumped = true;
     }
   }
 
   slide(): void {
     if (this.state === 'hit') return;
-    // 仅在贴地时可滑铲
+    // 仅在贴地时可滑铲;点按触发后固定滑行一段时间
     if (!this.isAirborne) {
       this.slideTimer = SLIDE_DURATION;
       this.state = 'slide';
@@ -74,7 +78,7 @@ export class Player {
     this.evtHit = true;
   }
 
-  update(dt: number, jumpPressed: boolean, slideHeld: boolean): void {
+  update(dt: number, jumpPressed: boolean, slidePressed: boolean): void {
     // 起跑短暂过渡
     if (this.state === 'start') {
       this.startTimer -= dt;
@@ -92,25 +96,27 @@ export class Player {
       return;
     }
 
-    // 输入响应
+    // 输入响应(均为边沿触发)
     if (jumpPressed) this.jump();
-    else if (slideHeld && !this.isAirborne && this.state !== 'slide') this.slide();
+    else if (slidePressed) this.slide();
 
-    // 滑铲计时
+    // 滑铲计时: 到时自动起身,不依赖按住
     if (this.state === 'slide') {
       this.slideTimer -= dt;
-      // 松开 S 或计时结束则提前结束滑铲
-      if (this.slideTimer <= 0 || !slideHeld) {
+      if (this.slideTimer <= 0) {
         this.state = 'run';
       }
     }
 
     this.applyGravity(dt);
 
-    // 落地后状态归位
-    if (!this.isAirborne && this.state === 'jump') {
-      this.state = 'run';
-      this.evtLanded = true;
+    // 落地后状态归位 + 重置跳跃次数
+    if (!this.isAirborne) {
+      if (this.state === 'jump') {
+        this.state = 'run';
+        this.evtLanded = true;
+      }
+      this.jumpsLeft = MAX_JUMPS;
     }
 
     if (this.state === 'run') {
