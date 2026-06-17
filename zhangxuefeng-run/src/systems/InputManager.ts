@@ -8,9 +8,10 @@ export class InputManager {
   private confirmQueued = false;
   private slideQueued = false;
 
-  // 触屏: 记录每个触点落在上半区还是下半区
-  private touchTopActive = false;
-  private touchBottomActive = false;
+  // 触屏滑动手势: 记录起始触点, 跨过阈值即触发(每次手势只触发一次)
+  private swipeStartY = 0;
+  private swipeId: number | null = null;
+  private swipeFired = false;
 
   // 菜单用: 最近一次点按的游戏坐标(供 UI 按钮命中检测)
   private tap: { x: number; y: number } | null = null;
@@ -22,6 +23,7 @@ export class InputManager {
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
     canvas.addEventListener('touchstart', this.onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', this.onTouchMove, { passive: false });
     canvas.addEventListener('touchend', this.onTouchEnd, { passive: false });
     canvas.addEventListener('touchcancel', this.onTouchEnd, { passive: false });
     canvas.addEventListener('pointerdown', this.onPointerDown);
@@ -71,39 +73,48 @@ export class InputManager {
     // slide 改为边沿触发,无需处理松开
   };
 
-  // 触点 y 落在上 60% => 跳跃, 下 40% => 滑铲
-  private classifyTouches(touches: TouchList) {
-    const rect = this.canvas.getBoundingClientRect();
-    this.touchTopActive = false;
-    this.touchBottomActive = false;
-    const splitRatio = 0.6;
-    for (let i = 0; i < touches.length; i++) {
-      const t = touches[i];
-      const ly = ((t.clientY - rect.top) / rect.height) * GAME_HEIGHT;
-      if (ly < GAME_HEIGHT * splitRatio) this.touchTopActive = true;
-      else this.touchBottomActive = true;
-    }
-  }
+  // 上滑 => 跳跃, 下滑 => 滑铲。阈值用游戏逻辑坐标(720 高), 约 6%。
+  private static SWIPE_THRESHOLD = GAME_HEIGHT * 0.06;
 
   private onTouchStart = (e: TouchEvent) => {
     e.preventDefault();
-    const topBefore = this.touchTopActive;
-    const bottomBefore = this.touchBottomActive;
-    this.classifyTouches(e.touches);
-    // 上半区新触点 => 跳跃; 下半区新触点 => 滑铲(均边沿触发)
-    if (this.touchTopActive && !topBefore) {
+    if (this.swipeId !== null) return; // 已在跟踪一个手势
+    const t = e.changedTouches[0];
+    if (!t) return;
+    this.swipeId = t.identifier;
+    this.swipeStartY = this.toGameCoords(t.clientX, t.clientY).y;
+    this.swipeFired = false;
+  };
+
+  private onTouchMove = (e: TouchEvent) => {
+    e.preventDefault();
+    if (this.swipeId === null || this.swipeFired) return;
+    const t = this.findTouch(e.changedTouches, this.swipeId);
+    if (!t) return;
+    const y = this.toGameCoords(t.clientX, t.clientY).y;
+    const dy = y - this.swipeStartY;
+    if (dy <= -InputManager.SWIPE_THRESHOLD) {
       this.jumpQueued = true;
-      this.confirmQueued = true;
-    }
-    if (this.touchBottomActive && !bottomBefore) {
+      this.swipeFired = true;
+    } else if (dy >= InputManager.SWIPE_THRESHOLD) {
       this.slideQueued = true;
+      this.swipeFired = true;
     }
   };
 
   private onTouchEnd = (e: TouchEvent) => {
     e.preventDefault();
-    this.classifyTouches(e.touches);
+    if (this.swipeId === null) return;
+    const ended = this.findTouch(e.changedTouches, this.swipeId);
+    if (ended) this.swipeId = null; // 跟踪的手指抬起, 结束本次手势
   };
+
+  private findTouch(list: TouchList, id: number): Touch | null {
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].identifier === id) return list[i];
+    }
+    return null;
+  }
 
   // 每帧读取并清空边沿触发标志
   poll(): InputState {

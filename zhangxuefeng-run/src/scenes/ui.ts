@@ -79,8 +79,8 @@ export function drawControlHint(
   ctx.fill();
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 28px Zpix, system-ui, sans-serif';
-  ctx.fillText('上半屏 / W·↑ 跳跃(可二段跳)', width / 2, height / 2 - 8);
-  ctx.fillText('下半屏 / S·↓ 滑铲', width / 2, height / 2 + 30);
+  ctx.fillText('上滑 / W·↑ 跳跃(可二段跳)', width / 2, height / 2 - 8);
+  ctx.fillText('下滑 / S·↓ 滑铲', width / 2, height / 2 + 30);
   ctx.restore();
   ctx.textAlign = 'left';
 }
