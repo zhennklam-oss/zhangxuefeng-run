@@ -1,3 +1,5 @@
+/* Zpix 像素字体通过 JS(FontFace API)按 BASE_URL 加载, 见 main.ts */
+
 * {
   margin: 0;
   padding: 0;
@@ -10,7 +12,7 @@ body {
   height: 100%;
   overflow: hidden;
   background: #cfe8f5;
-  font-family: system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: 'Zpix', system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   touch-action: none;

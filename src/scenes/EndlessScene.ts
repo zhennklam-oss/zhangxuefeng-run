@@ -162,16 +162,16 @@ export class EndlessScene extends Scene {
 
     // HUD
     ctx.fillStyle = '#08060d';
-    ctx.font = 'bold 30px system-ui, sans-serif';
+    ctx.font = 'bold 30px Zpix, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(`${this.score.total}`, 24, 46);
-    ctx.font = '18px system-ui, sans-serif';
+    ctx.font = '18px Zpix, system-ui, sans-serif';
     ctx.fillStyle = '#6b6375';
     ctx.fillText('得分', 24, 66);
 
     ctx.textAlign = 'center';
     ctx.fillStyle = '#e67e22';
-    ctx.font = 'bold 26px system-ui, sans-serif';
+    ctx.font = 'bold 26px Zpix, system-ui, sans-serif';
     if (this.score.combo > 1) {
       ctx.fillText(
         `连击 ${this.score.combo}　x${this.score.multiplier.toFixed(1)}`,

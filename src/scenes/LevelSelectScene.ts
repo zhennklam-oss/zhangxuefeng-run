@@ -89,21 +89,21 @@ export class LevelSelectScene extends Scene {
     ctx.fillRect(0, GROUND_Y, GAME_WIDTH, GAME_HEIGHT - GROUND_Y);
 
     ctx.fillStyle = '#08060d';
-    ctx.font = 'bold 52px system-ui, sans-serif';
+    ctx.font = 'bold 52px Zpix, system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('选择关卡', GAME_WIDTH / 2, 130);
 
-    drawButton(ctx, this.btnBack, { fill: '#95a5a6', font: 'bold 24px system-ui' });
+    drawButton(ctx, this.btnBack, { fill: '#95a5a6', font: 'bold 24px Zpix, system-ui' });
 
     for (const lb of this.levelButtons) {
       drawButton(ctx, lb.btn, {
         fill: lb.btn.enabled ? '#3498db' : '#b9b6bf',
-        font: 'bold 56px system-ui, sans-serif',
+        font: 'bold 56px Zpix, system-ui, sans-serif',
         text: lb.btn.enabled ? '#fff' : '#7a7783',
       });
       if (!lb.btn.enabled) {
         ctx.fillStyle = '#7a7783';
-        ctx.font = '26px system-ui, sans-serif';
+        ctx.font = '26px Zpix, system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(
           '🔒',

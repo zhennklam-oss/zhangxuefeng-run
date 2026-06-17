@@ -133,7 +133,7 @@ export class GameScene extends Scene {
 
   private renderHud(ctx: CanvasRenderingContext2D): void {
     ctx.fillStyle = '#08060d';
-    ctx.font = 'bold 26px system-ui, sans-serif';
+    ctx.font = 'bold 26px Zpix, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(
       `${this.config.name}  ${this.level.meters}/${this.config.distance}m`,

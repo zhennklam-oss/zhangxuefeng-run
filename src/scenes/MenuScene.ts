@@ -61,22 +61,22 @@ export class MenuScene extends Scene {
     drawClouds(ctx, '#ffffff', GAME_WIDTH);
 
     ctx.fillStyle = '#08060d';
-    ctx.font = 'bold 84px system-ui, sans-serif';
+    ctx.font = 'bold 84px Zpix, system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('张雪峰快跑', GAME_WIDTH / 2, 230);
 
-    ctx.font = '22px system-ui, sans-serif';
+    ctx.font = '22px Zpix, system-ui, sans-serif';
     ctx.fillStyle = '#6b6375';
     ctx.fillText('W/↑ 跳跃　·　S/↓ 滑铲', GAME_WIDTH / 2, 285);
 
     drawButton(ctx, this.btnStart);
     drawButton(ctx, this.btnEndless);
-    drawButton(ctx, this.btnMute, { fill: '#95a5a6', font: '28px system-ui' });
+    drawButton(ctx, this.btnMute, { fill: '#95a5a6', font: '28px Zpix, system-ui' });
 
     const hs = getHighScore();
     if (hs > 0) {
       ctx.fillStyle = '#6b6375';
-      ctx.font = '20px system-ui, sans-serif';
+      ctx.font = '20px Zpix, system-ui, sans-serif';
       ctx.fillText(`无尽最高分 ${hs}`, GAME_WIDTH / 2, 545);
     }
   }

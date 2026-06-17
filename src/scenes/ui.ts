@@ -39,7 +39,7 @@ export function drawButton(
   ctx.fill();
 
   ctx.fillStyle = opts.text ?? '#fff';
-  ctx.font = opts.font ?? 'bold 30px system-ui, sans-serif';
+  ctx.font = opts.font ?? 'bold 30px Zpix, system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(btn.label, r.x + r.w / 2, r.y + r.h / 2 + 1);
@@ -78,7 +78,7 @@ export function drawControlHint(
   roundRect(ctx, (width - bw) / 2, height / 2 - bh / 2, bw, bh, 16);
   ctx.fill();
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 28px system-ui, sans-serif';
+  ctx.font = 'bold 28px Zpix, system-ui, sans-serif';
   ctx.fillText('上半屏 / W·↑ 跳跃(可二段跳)', width / 2, height / 2 - 8);
   ctx.fillText('下半屏 / S·↓ 滑铲', width / 2, height / 2 + 30);
   ctx.restore();
@@ -101,7 +101,7 @@ export function drawLives(
       ctx.drawImage(img, x, topY, size, size);
     } else {
       ctx.fillStyle = '#e74c3c';
-      ctx.font = `${size}px system-ui`;
+      ctx.font = `${size}px Zpix, system-ui`;
       ctx.textAlign = 'left';
       ctx.fillText('♥', x, topY + size);
     }
