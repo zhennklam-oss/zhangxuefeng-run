@@ -42,11 +42,13 @@ export class Game {
     requestAnimationFrame(this.loop);
   }
 
-  // 让 canvas 在保持 16:9 的前提下铺满视口
+  // 让 canvas 保持 16:9, 居中显示且不占满整个视口(留白更美观)
   private resize = () => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const scale = Math.min(vw / GAME_WIDTH, vh / GAME_HEIGHT);
+    // 只用视口的一部分: 宽度最多 82%, 高度最多 88%, 并设绝对像素上限
+    const MAX_W = 1100;
+    const vw = window.innerWidth * 0.82;
+    const vh = window.innerHeight * 0.88;
+    const scale = Math.min(vw / GAME_WIDTH, vh / GAME_HEIGHT, MAX_W / GAME_WIDTH);
     this.canvas.style.width = `${Math.round(GAME_WIDTH * scale)}px`;
     this.canvas.style.height = `${Math.round(GAME_HEIGHT * scale)}px`;
   };
